@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vendor Headcount Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',system-ui,sans-serif;background:#f8fafc;min-height:100vh;padding:20px 16px 40px;color:#0f172a}.wrap{max-width:1200px;margin:0 auto}.card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1px solid #e5e7eb;margin-bottom:16px}h1{font-size:22px;font-weight:800;display:flex;align-items:center;gap:10px}.live{background:#dcfce7;color:#16a34a;font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;text-transform:uppercase;letter-spacing:.04em}.sub{font-size:12px;color:#94a3b8;margin-top:4px}.btn{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:600;color:#475569;cursor:pointer;font-family:inherit}.btn:hover{border-color:#7c3aed}.bp{background:#7c3aed;color:#fff;border:none;padding:9px 22px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit}.g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}.tabs{display:flex;gap:4px;background:#fff;border-radius:10px;padding:4px;border:1px solid #e5e7eb;margin-bottom:20px}.tab{flex:1;padding:10px 8px;border-radius:8px;border:none;font-weight:600;font-size:13px;cursor:pointer;transition:all .15s;background:transparent;color:#64748b;font-family:inherit}.tab.on{background:#7c3aed;color:#fff}.badge{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:13px;padding:5px 14px;border-radius:20px;margin:0 4px 4px 0}.bsm{font-size:12px;padding:3px 10px;border-radius:16px;gap:4px}.bc{color:#fff;border-radius:10px;padding:2px 9px;font-size:11px;font-weight:700}.bcsm{border-radius:8px;padding:1px 7px;font-size:10px}.bar{height:12px;background:#f1f5f9;border-radius:6px;overflow:hidden}.barsm{height:6px;border-radius:4px;background:#e2e8f0}.fill{height:100%;border-radius:6px;transition:width .6s ease}.cbar{display:flex;border-radius:6px;overflow:hidden;height:10px;background:#f1f5f9}.fb{padding:7px 18px;border-radius:20px;border:2px solid;font-weight:600;font-size:13px;cursor:pointer;transition:all .15s;font-family:inherit;background:#fff}.fb.on{color:#fff}.srch{width:100%;padding:10px 14px;border-radius:8px;border:1px solid #e2e8f0;font-size:14px;outline:none;font-family:inherit;margin-bottom:12px}table{width:100%;border-collapse:collapse;font-size:13px;min-width:900px}th{text-align:left;padding:11px 10px;color:#475569;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;cursor:pointer;user-select:none;border-bottom:2px solid #e5e7eb;background:#f8fafc}td{padding:10px 10px;border-bottom:1px solid #f1f5f9}tr:hover td{background:#fafbfd}.pill{padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;display:inline-block}.loader{display:flex;justify-content:center;align-items:center;height:80vh;flex-direction:column}.spinner{width:48px;height:48px;border:4px solid #e5e7eb;border-top-color:#7c3aed;border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}details summary{cursor:pointer}.sc{background:#f8fafc;border-radius:8px;padding:14px;border:1px solid #e5e7eb;margin-bottom:8px}.ft{text-align:center;margin-top:32px;color:#cbd5e1;font-size:11px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+var API="https://script.google.com/macros/s/AKfycbydcJI13RQQj7RgGPGrEChPOv_1u06b-2tjqbz1TJGQjRj4ltW-rOQb1NW93LQrN14sng/exec";
+var VC={Horatio:"#7c3aed",ECE:"#0284c7",Telus:"#059669"};
+var TC={"<30 Days":"#f59e0b","30\u201390 Days":"#6366f1","\u226590 Days":"#10b981",Unknown:"#94a3b8"};
+var RC={Agent:"#3b82f6","Senior Agent":"#8b5cf6","Team Lead":"#ec4899",QA:"#f59e0b",Trainer:"#10b981"};
+var RO=["Agent","Senior Agent","Team Lead","QA","Trainer"];
+var SPC=["#6366f1","#0ea5e9","#8b5cf6","#ec4899","#f59e0b","#10b981","#ef4444","#14b8a6","#f97316","#a855f7"];
+var ETC={Training:"#f59e0b",Production:"#3b82f6",Leadership:"#8b5cf6"};
+var ATC={Voluntary:"#f59e0b",Involuntary:"#ef4444",Regrettable:"#ef4444","Non-Regrettable":"#10b981"};
+
+var S={all:[],stats:[],attrData:[],ytdAttr:[],attrMonths:[],attrYears:[],tab:"overview",dv:"all",q:"",sc:null,sd:"asc",ay:"all",dbg:"",loading:true,err:null,ts:null};
+
+function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
+function n(h){return(h||"").trim().toLowerCase().replace(/[^a-z0-9]/g,"_")}
+function gf(row,keys){for(var i=0;i<keys.length;i++){var k=keys[i].toLowerCase().replace(/:/g,"").trim();for(var rk in row){if(rk.toLowerCase().replace(/:/g,"").trim()===k)return(row[rk]!=null?row[rk]:"").toString().trim()}}return""}
+function nr(r){r=(r||"").trim().toLowerCase();if(r==="agent")return"Agent";if(r==="senior agent")return"Senior Agent";if(r==="team lead")return"Team Lead";if(r==="qa")return"QA";if(r==="trainer")return"Trainer";return"_x"}
+function tb(d){if(d==null)return"Unknown";if(d<30)return"<30 Days";if(d<90)return"30\u201390 Days";return"\u226590 Days"}
+
+function procRoster(rows,vendor){
+  var out=[];
+  for(var i=0;i<rows.length;i++){
+    var r=rows[i];
+    var st=gf(r,["Status"]).toLowerCase();if(st!=="active")continue;
+    var name=gf(r,["Full Name"]);if(!name)continue;
+    var role=nr(gf(r,["Role"]));if(role==="_x")continue;
+    var rawT=parseInt(gf(r,["Tenure in Days"]));
+    var days=rawT&&!isNaN(rawT)?rawT:null;
+    var specs=[gf(r,["Specialty 1"]),gf(r,["Specialty 2"]),gf(r,["Specialty 3"])].filter(Boolean);
+    out.push({vendor:vendor,name:name,email:gf(r,["Flex Email"]),supervisor:gf(r,["Actual Supervisor"]),manager:gf(r,["Operation Manager"]),site:gf(r,["Site"])||"Unknown",statusType:gf(r,["Status Type"]),startDate:gf(r,["Production Start Date","Training Date"])||"\u2014",tenureDays:days,tenureBucket:tb(days),role:role,specialties:specs})
+  }
+  return out
+}
+
+function procAttr(rows){
+  var mn=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  var out=[];
+  for(var i=0;i<rows.length;i++){
+    var r=rows[i];
+    var name=gf(r,["Agent Name"]);var bpo=gf(r,["BPO"]);
+    if(!name||!bpo)continue;
+    var month=gf(r,["Month"]);var yr=parseInt(gf(r,["Year"]));if(isNaN(yr))yr=null;
+    var tm=(month&&yr)?month+" "+yr:"Unknown";
+    var mi=mn.indexOf(month);var sk=yr?yr*100+(mi>=0?mi:99):0;
+    out.push({name:name,bpo:bpo,termMonth:tm,termMonthSort:sk,month:month,year:yr,tenure:gf(r,["Agent Tenure(in days)","Agent Tenure"]),empType:gf(r,["Employee Type"])||"Unknown",reason:gf(r,["Termination Reason"])||"Unknown",volInvol:gf(r,["Voluntary or Involuntary"])||"Unknown",regret:gf(r,["Regrettable or Non-Regrettable"])||"Unknown"})
+  }
+  return out
+}
+
+function getDD(){
+  var list=S.dv==="all"?S.all:S.all.filter(function(a){return a.vendor===S.dv});
+  if(S.q){var q=S.q.toLowerCase();list=list.filter(function(a){return a.name.toLowerCase().indexOf(q)>=0||a.email.toLowerCase().indexOf(q)>=0||a.role.toLowerCase().indexOf(q)>=0||a.vendor.toLowerCase().indexOf(q)>=0||a.manager.toLowerCase().indexOf(q)>=0||a.supervisor.toLowerCase().indexOf(q)>=0||a.site.toLowerCase().indexOf(q)>=0})}
+  if(S.sc){var sc=S.sc,sd=S.sd;list=list.slice().sort(function(a,b){var va=a[sc],vb=b[sc];if(sc==="tenureDays"){va=va!=null?va:-1;vb=vb!=null?vb:-1;return sd==="asc"?va-vb:vb-va}va=(va||"").toString().toLowerCase();vb=(vb||"").toString().toLowerCase();return sd==="asc"?va.localeCompare(vb):vb.localeCompare(va)})}
+  return list
+}
+
+function dlcsv(){
+  var dd=getDD();var h=["Name","Vendor","Role","Flex Email","Team Lead","Manager","Site","Start Date","Tenure (Days)","Tenure Bucket","Status Type","Specialty 1","Specialty 2","Specialty 3"];
+  var rows=dd.map(function(a){return[a.name,a.vendor,a.role,a.email,a.supervisor,a.manager,a.site,a.startDate,a.tenureDays!=null?a.tenureDays:"",a.tenureBucket,a.statusType,a.specialties[0]||"",a.specialties[1]||"",a.specialties[2]||""]});
+  var csv=[h].concat(rows).map(function(r){return r.map(function(c){return'"'+String(c).replace(/"/g,'""')+'"'}).join(",")}).join("\n");
+  var b=new Blob([csv],{type:"text/csv"});var u=URL.createObjectURL(b);var a=document.createElement("a");a.href=u;a.download="vendor_roster_"+S.dv+"_"+new Date().toISOString().slice(0,10)+".csv";a.click();URL.revokeObjectURL(u)
+}
+
+async function load(){
+  S.loading=true;S.err=null;S.dbg="";render();
+  try{
+    var resp=await fetch(API);if(!resp.ok)throw new Error("HTTP "+resp.status);
+    var json=await resp.json();if(json.error)throw new Error(json.error);
+    var tk=Object.keys(json);S.dbg="Tabs received: "+tk.join(", ")+"\n";
+
+    var all=[];
+    ["Horatio","ECE","Telus"].forEach(function(v){
+      var tab=json[v];
+      if(tab&&tab.rows){
+        var d=procRoster(tab.rows,v);
+        all=all.concat(d);
+        S.dbg+=v+": "+tab.rows.length+" rows \u2192 "+d.length+" counted (Agents: "+d.filter(function(a){return a.role==="Agent"}).length+")\n";
+        S.dbg+="  Headers: "+tab.headers.join(", ")+"\n";
+      }else{S.dbg+=v+": not found\n"}
+    });
+
+    var attrData=[];
+    if(json.Attrition&&json.Attrition.rows){
+      attrData=procAttr(json.Attrition.rows);
+      var bv={};attrData.forEach(function(a){bv[a.bpo]=(bv[a.bpo]||0)+1});
+      S.dbg+="Attrition: "+json.Attrition.rows.length+" rows \u2192 "+attrData.length+" processed\n";
+      S.dbg+="  BPO: "+Object.keys(bv).map(function(k){return'"'+k+'":'+bv[k]}).join(", ")+"\n";
+      var yv={};attrData.forEach(function(a){var y=a.year||"null";yv[y]=(yv[y]||0)+1});
+      S.dbg+="  Years: "+Object.keys(yv).map(function(k){return k+":"+yv[k]}).join(", ")+"\n";
+    }else{S.dbg+="Attrition: not found\n"}
+
+    var stats=["Horatio","ECE","Telus"].map(function(v){
+      var ag=all.filter(function(a){return a.vendor===v});
+      var byRole={};ag.forEach(function(a){byRole[a.role]=(byRole[a.role]||0)+1});
+      var byTenure={"<30 Days":0,"30\u201390 Days":0,"\u226590 Days":0,Unknown:0};
+      ag.filter(function(a){return a.role==="Agent"}).forEach(function(a){byTenure[a.tenureBucket]++});
+      return{vendor:v,total:ag.length,agentCount:ag.filter(function(a){return a.role==="Agent"}).length,byRole:byRole,byTenure:byTenure}
+    });
+
+    var ays={};attrData.forEach(function(a){if(a.year)ays[a.year]=1});
+    var attrYears=Object.keys(ays).sort(function(a,b){return parseInt(b)-parseInt(a)});
+
+    S.all=all;S.stats=stats;S.attrData=attrData;S.attrYears=attrYears;S.ts=new Date();S.loading=false;
+    updateAttr();
+  }catch(e){S.err=e.message;S.loading=false}
+  render()
+}
+
+function updateAttr(){
+  var d=S.ay==="all"?S.attrData:S.attrData.filter(function(a){return a.year===parseInt(S.ay)});
+  S.ytdAttr=d;
+  var ms={};d.forEach(function(a){if(a.termMonth!=="Unknown")ms[a.termMonth]=a.termMonthSort});
+  S.attrMonths=Object.keys(ms).sort(function(a,b){return ms[a]-ms[b]});
+}
+
+function setAY(yr){S.ay=yr;updateAttr();render()}
+
+function dimBreak(items,field,label,color){
+  var counts={};items.forEach(function(a){var v=a[field]||"Unknown";counts[v]=(counts[v]||0)+1});
+  var sorted=Object.entries(counts).sort(function(a,b){return b[1]-a[1]});
+  if(!sorted.length)return"";
+  var total=items.length;
+  var h='<div style="margin-top:12px"><div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">'+esc(label)+'</div><div style="display:grid;gap:6px">';
+  sorted.forEach(function(e){
+    var pct=total?Math.round(e[1]/total*100):0;var bc=ATC[e[0]]||color||"#64748b";
+    h+='<div><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:13px;font-weight:500;color:#334155">'+esc(e[0])+'</span><span style="font-size:13px;font-weight:600;color:'+bc+'">'+e[1]+' <span style="color:#94a3b8;font-weight:400">('+pct+'%)</span></span></div><div class="bar" style="height:8px"><div class="fill" style="width:'+pct+'%;background:'+bc+'"></div></div></div>'
+  });
+  return h+"</div></div>"
+}
+
+function specBreak(agents,color){
+  var sc={},skilled=0;
+  agents.forEach(function(a){var has=false;a.specialties.forEach(function(s){if(s){sc[s]=(sc[s]||0)+1;has=true}});if(has)skilled++});
+  var sorted=Object.entries(sc).sort(function(a,b){return b[1]-a[1]});
+  if(!sorted.length)return"";
+  var h='<details style="margin-top:16px;border-top:1px solid #f1f5f9;padding-top:12px"><summary style="font-size:13px;font-weight:600;color:'+color+'">Specialty Breakdown ('+sorted.length+' skills \u2022 '+skilled+' agents skilled)</summary><div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px">';
+  sorted.forEach(function(e,i){var c=SPC[i%SPC.length];h+='<span class="badge bsm" style="background:'+c+'12;color:'+c+';border:1px solid '+c+'25">'+esc(e[0])+'<span class="bc bcsm" style="background:'+c+'">'+e[1]+'</span></span>'});
+  return h+"</div></details>"
+}
+
+function render(){
+  var app=document.getElementById("app");
+  if(S.loading){app.innerHTML='<div class="loader"><div class="spinner"></div><p style="margin-top:20px;font-weight:600">Loading Live Data</p><p style="color:#94a3b8;font-size:13px;margin-top:4px">Fetching from Google Sheets...</p></div>';return}
+  if(S.err){app.innerHTML='<div class="loader"><div style="font-size:40px;margin-bottom:12px">\u26a0\ufe0f</div><h2 style="margin-bottom:8px">Connection Issue</h2><p style="color:#dc2626;background:#fef2f2;padding:12px;border-radius:8px;margin-bottom:16px;font-size:13px">'+esc(S.err)+'</p><button class="bp" onclick="load()">Try Again</button></div>';return}
+
+  var all=S.all,stats=S.stats,has=all.length>0,dd=getDD();
+  var ta=all.filter(function(a){return a.role==="Agent"}).length;
+  var ar=[];var rm={};all.forEach(function(a){rm[a.role]=1});RO.forEach(function(r){if(rm[r])ar.push(r)});
+  var ds=new Date().toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+  var ts=S.ts?S.ts.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}):"";
+
+  var h='<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:24px"><div><h1>Vendor Headcount Dashboard '+(has?'<span class="live">Live</span>':'')+'</h1><p class="sub">Headcount & Attrition Report \u2013 Flex \u2022 '+ds+(ts?' \u2022 Refreshed '+ts:'')+'</p></div><button class="btn" onclick="load()">\u21bb Refresh</button></div>';
+
+  if(S.dbg){h+='<div class="card" style="border-color:'+(has?'#bbf7d0':'#fecaca')+';background:'+(has?'#f0fdf4':'#fef2f2')+'"><details><summary style="font-size:13px;font-weight:600;color:'+(has?'#16a34a':'#dc2626')+'">'+(has?'\u2713 Connected \u2014 '+all.length+' headcount, '+ta+' agents, '+S.ytdAttr.length+' attritions':'\u26a0 Check data')+'</summary><pre style="font-size:11px;color:#64748b;margin:8px 0 0;white-space:pre-wrap;line-height:1.8">'+esc(S.dbg)+'</pre></details></div>'}
+
+  // Summary cards
+  h+='<div class="g4">';
+  stats.forEach(function(s){h+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em">'+s.vendor+'</span><span style="width:12px;height:12px;border-radius:50%;background:'+VC[s.vendor]+';display:inline-block"></span></div><div style="font-size:40px;font-weight:800;line-height:1">'+s.agentCount+'</div><div style="font-size:12px;color:#94a3b8;margin-top:6px">Active Agents</div></div>'});
+  h+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em">Combined</span><span style="width:12px;height:12px;border-radius:3px;background:#0f172a;display:inline-block"></span></div><div style="font-size:40px;font-weight:800;line-height:1">'+ta+'</div><div style="font-size:12px;color:#94a3b8;margin-top:6px">Active Agents</div></div></div>';
+
+  // Tabs
+  var tabs=[["overview","Overview"],["tenure","Tenure"],["attrition","Attrition"],["drilldown","Roster Drilldown"]];
+  h+='<div class="tabs">';tabs.forEach(function(t){h+='<button class="tab'+(S.tab===t[0]?' on':'')+'" onclick="S.tab=\''+t[0]+'\';render()">'+t[1]+'</button>'});h+='</div>';
+
+  // OVERVIEW
+  if(S.tab==="overview"){
+    stats.forEach(function(vs){
+      var va=all.filter(function(a){return a.vendor===vs.vendor});
+      var sites={};va.forEach(function(a){if(!sites[a.site])sites[a.site]=[];sites[a.site].push(a)});
+      var sk=Object.keys(sites).sort();var showSites=!(sk.length<=1&&sk[0]==="Unknown");
+      h+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:4px;background:'+VC[vs.vendor]+';display:inline-block"></span>'+vs.vendor+' <span style="font-weight:400;color:#94a3b8">\u2014 Full Headcount Breakout</span></h3><span style="font-size:24px;font-weight:800;color:'+VC[vs.vendor]+'">'+vs.total+'</span></div>';
+      if(vs.total>0){
+        h+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">';
+        ar.filter(function(r){return vs.byRole[r]}).forEach(function(r){var c=RC[r]||"#64748b";h+='<span class="badge" style="background:'+c+'12;color:'+c+';border:1px solid '+c+'25">'+r+'<span class="bc" style="background:'+c+'">'+vs.byRole[r]+'</span></span>'});
+        h+='</div><div class="cbar">';
+        ar.filter(function(r){return vs.byRole[r]}).forEach(function(r){h+='<div style="width:'+(vs.byRole[r]/vs.total*100)+'%;background:'+(RC[r]||"#64748b")+'"></div>'});
+        h+='</div>';
+        if(showSites){
+          h+='<details style="margin-top:16px;border-top:1px solid #f1f5f9;padding-top:12px"><summary style="font-size:13px;font-weight:600;color:'+VC[vs.vendor]+'">View by Site ('+sk.length+' sites)</summary><div style="margin-top:12px">';
+          sk.forEach(function(site){
+            var sa=sites[site];var sr={};sa.forEach(function(a){sr[a.role]=(sr[a.role]||0)+1});
+            var srl=RO.filter(function(r){return sr[r]});
+            h+='<div class="sc"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="font-size:14px;font-weight:700">'+esc(site)+'</span><span style="font-size:16px;font-weight:800;color:'+VC[vs.vendor]+'">'+sa.length+'</span></div><div style="display:flex;flex-wrap:wrap;gap:6px">';
+            srl.forEach(function(r){var c=RC[r]||"#64748b";h+='<span class="badge bsm" style="background:'+c+'12;color:'+c+';border:1px solid '+c+'25">'+r+'<span class="bc bcsm" style="background:'+c+'">'+sr[r]+'</span></span>'});
+            h+='</div></div>'});
+          h+='</div></details>';
+        }
+        h+=specBreak(va.filter(function(a){return a.role==="Agent"}),VC[vs.vendor]);
+      }
+      h+='</div>';
+    });
+    if(ar.length>0){
+      var totalAll=stats.reduce(function(s,v){return s+v.total},0);
+      h+='<div class="card"><h3 style="font-size:15px;font-weight:700;margin-bottom:12px">Role Distribution \u2014 All Vendors</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px">';
+      ar.forEach(function(r){var c=stats.reduce(function(s,v){return s+(v.byRole[r]||0)},0);var pct=totalAll?Math.round(c/totalAll*100):0;var cl=RC[r]||"#64748b";h+='<div style="text-align:center;padding:14px;border-radius:10px;background:'+cl+'08;border:1px solid '+cl+'18"><div style="font-size:26px;font-weight:800;color:'+cl+'">'+c+'</div><div style="font-size:12px;font-weight:600;color:#334155;margin-top:2px">'+r+'</div><div style="font-size:11px;color:#94a3b8">'+pct+'%</div></div>'});
+      h+='</div></div>';
+    }
+    if(ta>0){h+='<div class="card"><h3 style="font-size:15px;font-weight:700;margin-bottom:4px">Specialty Distribution \u2014 All Vendors (Agents)</h3>'+specBreak(all.filter(function(a){return a.role==="Agent"}),"#0f172a")+'</div>'}
+  }
+
+  // TENURE
+  if(S.tab==="tenure"){
+    var bk=["<30 Days","30\u201390 Days","\u226590 Days"];
+    stats.forEach(function(vs){
+      var mx=Math.max.apply(null,bk.map(function(b){return vs.byTenure[b]||0}).concat([1]));
+      h+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:4px;background:'+VC[vs.vendor]+';display:inline-block"></span>'+vs.vendor+' <span style="font-weight:400;color:#94a3b8">\u2014 Tenure (Agents)</span></h3><span style="font-size:20px;font-weight:800;color:'+VC[vs.vendor]+'">'+vs.agentCount+'</span></div>';
+      if(vs.agentCount>0){h+='<div style="display:grid;gap:14px">';bk.forEach(function(b){var c=vs.byTenure[b]||0;var pct=vs.agentCount?Math.round(c/vs.agentCount*100):0;h+='<div><div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:13px;font-weight:600;color:#334155">'+b+'</span><span style="font-size:13px;font-weight:600;color:'+TC[b]+'">'+c+' <span style="color:#94a3b8;font-weight:400">('+pct+'%)</span></span></div><div class="bar"><div class="fill" style="width:'+(c/mx*100)+'%;background:'+TC[b]+'"></div></div></div>'});h+='</div>'}
+      h+='</div>';
+    });
+    h+='<div class="card"><h3 style="font-size:15px;font-weight:700;margin-bottom:16px">Combined Tenure (Agents)</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px">';
+    bk.forEach(function(b){var c=all.filter(function(a){return a.role==="Agent"&&a.tenureBucket===b}).length;var pct=ta?Math.round(c/ta*100):0;var chips="";["Horatio","ECE","Telus"].forEach(function(v){var vc=all.filter(function(a){return a.vendor===v&&a.role==="Agent"&&a.tenureBucket===b}).length;chips+='<span style="font-size:10px;color:'+VC[v]+';font-weight:600;background:'+VC[v]+'12;padding:2px 8px;border-radius:8px">'+v[0]+':'+vc+'</span>'});
+    h+='<div style="text-align:center;padding:20px;border-radius:12px;background:'+TC[b]+'0a;border:2px solid '+TC[b]+'20"><div style="font-size:36px;font-weight:800;color:'+TC[b]+'">'+c+'</div><div style="font-size:13px;font-weight:700;color:#334155;margin-top:4px">'+b+'</div><div style="font-size:12px;color:#94a3b8;margin-top:2px">'+pct+'% of agents</div><div style="display:flex;gap:4px;justify-content:center;margin-top:10px;flex-wrap:wrap">'+chips+'</div></div>'});
+    h+='</div></div>';
+  }
+
+  // ATTRITION
+  if(S.tab==="attrition"){
+    var ytd=S.ytdAttr,ams=S.attrMonths;
+    var yrLabel=S.ay==="all"?"Total":S.ay;
+    // Year toggle
+    h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">';
+    ["all"].concat(S.attrYears).forEach(function(yr){var on=S.ay===yr;var cnt=yr==="all"?S.attrData.length:S.attrData.filter(function(a){return a.year===parseInt(yr)}).length;h+='<button class="fb'+(on?' on':'')+'" style="border-color:#0f172a;'+(on?'background:#0f172a;color:#fff':'color:#0f172a')+'" onclick="setAY(\''+yr+'\')">'+(yr==="all"?"All Time":yr)+' ('+cnt+')</button>'});
+    h+='</div>';
+    // YTD cards
+    h+='<div class="g4">';
+    ["Horatio","ECE","Telus"].forEach(function(v){var cnt=ytd.filter(function(a){return a.bpo===v}).length;h+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em">'+v+'</span><span style="width:12px;height:12px;border-radius:50%;background:'+VC[v]+';display:inline-block"></span></div><div style="font-size:40px;font-weight:800;color:#ef4444;line-height:1">'+cnt+'</div><div style="font-size:12px;color:#94a3b8;margin-top:6px">'+yrLabel+' Attritions</div></div>'});
+    h+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em">Combined</span><span style="width:12px;height:12px;border-radius:3px;background:#0f172a;display:inline-block"></span></div><div style="font-size:40px;font-weight:800;color:#ef4444;line-height:1">'+ytd.length+'</div><div style="font-size:12px;color:#94a3b8;margin-top:6px">'+yrLabel+' Attritions</div></div></div>';
+
+    // Per-BPO
+    ["Horatio","ECE","Telus"].forEach(function(v){
+      var va=ytd.filter(function(a){return a.bpo===v});
+      if(!va.length){h+='<div class="card"><h3 style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:4px;background:'+VC[v]+';display:inline-block"></span>'+v+' <span style="font-weight:400;color:#94a3b8">\u2014 No Attritions</span></h3></div>';return}
+      var vm=ams.filter(function(m){return va.some(function(a){return a.termMonth===m})});
+      var maxM=vm.length?Math.max.apply(null,vm.map(function(m){return va.filter(function(a){return a.termMonth===m}).length})):1;
+      h+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><h3 style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:4px;background:'+VC[v]+';display:inline-block"></span>'+v+' <span style="font-weight:400;color:#94a3b8">\u2014 '+yrLabel+' Attrition Breakout</span></h3><span style="font-size:24px;font-weight:800;color:#ef4444">'+va.length+'</span></div>';
+      h+='<details open><summary style="font-size:13px;font-weight:600;color:'+VC[v]+';margin-bottom:8px">View Breakdowns</summary><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:8px">';
+      h+='<div>'+dimBreak(va,"empType","Employee Type",VC[v])+'</div>';
+      h+='<div>'+dimBreak(va,"reason","Termination Reason",VC[v])+'</div>';
+      h+='<div>'+dimBreak(va,"volInvol","Voluntary / Involuntary",VC[v])+'</div>';
+      h+='<div>'+dimBreak(va,"regret","Regrettable / Non-Regrettable",VC[v])+'</div>';
+      h+='</div></details>';
+      if(vm.length){
+        h+='<details style="margin-top:16px;border-top:1px solid #f1f5f9;padding-top:12px"><summary style="font-size:13px;font-weight:600;color:'+VC[v]+'">Monthly Breakdown</summary><div style="margin-top:12px;display:grid;gap:8px">';
+        vm.forEach(function(m){var mc=va.filter(function(a){return a.termMonth===m}).length;h+='<div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:600;color:#334155">'+m+'</span><span style="font-size:13px;font-weight:700;color:'+VC[v]+'">'+mc+'</span></div><div class="bar" style="height:10px"><div class="fill" style="width:'+(mc/maxM*100)+'%;background:'+VC[v]+'"></div></div></div>'});
+        h+='</div></details>';
+      }
+      h+='</div>';
+    });
+
+    // Combined monthly by BPO
+    if(ams.length){
+      var maxAll=Math.max.apply(null,ams.map(function(m){return ytd.filter(function(a){return a.termMonth===m}).length}).concat([1]));
+      h+='<div class="card"><h3 style="font-size:15px;font-weight:700;margin-bottom:16px">Combined Monthly Attrition \u2014 '+(S.ay==="all"?"All Time":S.ay)+'</h3><div style="display:grid;gap:10px">';
+      ams.forEach(function(m){
+        var ma=ytd.filter(function(a){return a.termMonth===m});var vi=["Horatio","ECE","Telus"].filter(function(v){return ma.some(function(a){return a.bpo===v})});
+        h+='<div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:600;color:#334155">'+m+'</span><div style="display:flex;gap:8px;align-items:center">';
+        vi.forEach(function(v){var vc=ma.filter(function(a){return a.bpo===v}).length;h+='<span style="font-size:10px;color:'+VC[v]+';font-weight:600;background:'+VC[v]+'12;padding:2px 8px;border-radius:8px">'+v[0]+':'+vc+'</span>'});
+        h+='<span style="font-size:13px;font-weight:700;color:#0f172a">'+ma.length+'</span></div></div><div style="height:12px;background:#f1f5f9;border-radius:6px;overflow:hidden;display:flex">';
+        vi.forEach(function(v){var vc=ma.filter(function(a){return a.bpo===v}).length;h+='<div style="width:'+(vc/maxAll*100)+'%;background:'+VC[v]+'"></div>'});
+        h+='</div></div>'});
+      h+='</div></div>';
+
+      // Combined by Employee Type
+      h+='<div class="card"><h3 style="font-size:15px;font-weight:700;margin-bottom:16px">Monthly Attrition by Employee Type \u2014 '+(S.ay==="all"?"All Time":S.ay)+'</h3>';
+      var types={};ytd.forEach(function(a){types[a.empType]=1});var tl=Object.keys(types).sort();
+      h+='<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">';
+      tl.forEach(function(t){var tc=ETC[t]||"#64748b";var cnt=ytd.filter(function(a){return a.empType===t}).length;h+='<span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:'+tc+'"><span style="width:10px;height:10px;border-radius:3px;background:'+tc+';display:inline-block"></span>'+t+' ('+cnt+')</span>'});
+      h+='</div><div style="display:grid;gap:10px">';
+      ams.forEach(function(m){
+        var ma=ytd.filter(function(a){return a.termMonth===m});var ti=tl.filter(function(t){return ma.some(function(a){return a.empType===t})});
+        h+='<div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:600;color:#334155">'+m+'</span><div style="display:flex;gap:8px;align-items:center">';
+        ti.forEach(function(t){var tc=ETC[t]||"#64748b";var cnt=ma.filter(function(a){return a.empType===t}).length;h+='<span style="font-size:10px;font-weight:600;color:'+tc+';background:'+tc+'12;padding:2px 8px;border-radius:8px">'+t[0]+':'+cnt+'</span>'});
+        h+='<span style="font-size:13px;font-weight:700;color:#0f172a">'+ma.length+'</span></div></div><div style="height:12px;background:#f1f5f9;border-radius:6px;overflow:hidden;display:flex">';
+        ti.forEach(function(t){var tc=ETC[t]||"#64748b";var cnt=ma.filter(function(a){return a.empType===t}).length;h+='<div style="width:'+(cnt/maxAll*100)+'%;background:'+tc+'"></div>'});
+        h+='</div></div>'});
+      h+='</div></div>';
+    }
+  }
+
+  // DRILLDOWN
+  if(S.tab==="drilldown"){
+    h+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px"><h3 style="font-size:15px;font-weight:700">Roster Drilldown</h3><button class="bp" onclick="dlcsv()">\u2193 Download CSV ('+dd.length+')</button></div>';
+    h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">';
+    ["all","Horatio","ECE","Telus"].forEach(function(v){var ct=v==="all"?all.length:all.filter(function(a){return a.vendor===v}).length;var cl=v==="all"?"#0f172a":VC[v];var on=S.dv===v;h+='<button class="fb'+(on?' on':'')+'" style="border-color:'+cl+';'+(on?'background:'+cl+';color:#fff':'color:'+cl)+'" onclick="S.dv=\''+v+'\';render()">'+(v==="all"?'Select All ('+ct+')':v+' ('+ct+')')+'</button>'});
+    h+='</div><input class="srch" type="text" placeholder="Search by name, email, role, vendor, manager, supervisor, or site..." value="'+esc(S.q)+'" oninput="S.q=this.value;render()">';
+    h+='<div style="font-size:12px;color:#64748b;margin-bottom:10px">Showing <strong>'+dd.length+'</strong> of '+all.length+'</div>';
+    h+='<div style="overflow-x:auto;border-radius:8px;border:1px solid #e5e7eb"><table><thead><tr>';
+    var cols=[["name","Name"],["vendor","Vendor"],["role","Role"],["email","Flex Email"],["supervisor","Team Lead"],["manager","Manager"],["site","Site"],["startDate","Start Date"],["tenureDays","Tenure"]];
+    cols.forEach(function(c){var arr=S.sc===c[0]?(S.sd==="asc"?" \u2191":" \u2193"):" \u21c5";h+='<th onclick="if(S.sc===\''+c[0]+'\')S.sd=S.sd===\'asc\'?\'desc\':\'asc\';else{S.sc=\''+c[0]+'\';S.sd=\'asc\';}render()">'+c[1]+arr+'</th>'});
+    h+='</tr></thead><tbody>';
+    dd.slice(0,500).forEach(function(a){var rc=RC[a.role]||"#64748b";var tc=TC[a.tenureBucket];
+    h+='<tr><td style="font-weight:600">'+esc(a.name)+'</td><td><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:50%;background:'+VC[a.vendor]+';display:inline-block"></span>'+a.vendor+'</span></td><td><span class="pill" style="background:'+rc+'14;color:'+rc+'">'+a.role+'</span></td><td style="color:#475569;font-size:12px">'+esc(a.email||"\u2014")+'</td><td style="color:#475569;font-size:12px">'+esc(a.supervisor||"\u2014")+'</td><td style="color:#475569;font-size:12px">'+esc(a.manager||"\u2014")+'</td><td style="color:#475569;font-size:12px">'+esc(a.site||"\u2014")+'</td><td style="color:#475569">'+esc(a.startDate)+'</td><td><span class="pill" style="background:'+tc+'14;color:'+tc+'">'+a.tenureBucket+'</span></td></tr>'});
+    h+='</tbody></table>';
+    if(dd.length>500)h+='<p style="text-align:center;color:#94a3b8;font-size:12px;padding:12px">Showing first 500 \u2014 download CSV for full list</p>';
+    if(!dd.length)h+='<p style="text-align:center;color:#94a3b8;font-size:13px;padding:24px">No agents match your filters</p>';
+    h+='</div></div>';
+  }
+
+  h+='<div class="ft">Vendor Operations \u2022 Live from Google Sheets \u2022 '+new Date().getFullYear()+'</div>';
+  app.innerHTML=h
+}
+
+load();
+</script>
+</body>
+</html>
