@@ -26,7 +26,7 @@ var S={all:[],stats:[],attrData:[],ytdAttr:[],attrMonths:[],attrYears:[],tab:"ov
 function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
 function n(h){return(h||"").trim().toLowerCase().replace(/[^a-z0-9]/g,"_")}
 function gf(row,keys){for(var i=0;i<keys.length;i++){var k=keys[i].toLowerCase().replace(/:/g,"").trim();for(var rk in row){if(rk.toLowerCase().replace(/:/g,"").trim()===k)return(row[rk]!=null?row[rk]:"").toString().trim()}}return""}
-function nr(r){r=(r||"").trim().toLowerCase();if(r==="agent")return"Agent";if(r==="senior agent")return"Senior Agent";if(r==="team lead")return"Team Lead";if(r==="qa")return"QA";if(r==="trainer")return"Trainer";return"_x"}
+function nr(r){r=(r||"").trim().toLowerCase();if(r==="agent")return"Agent";if(r==="senior agent")return"Senior Agent";if(r==="team lead"||r==="senior team lead")return"Team Lead";if(r==="qa")return"QA";if(r==="trainer")return"Trainer";return"_x"}
 function tb(d){if(d==null)return"Unknown";if(d<30)return"<30 Days";if(d<90)return"30\u201390 Days";return"\u226590 Days"}
 
 function procRoster(rows,vendor){
