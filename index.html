@@ -15,8 +15,8 @@
 var API="https://script.google.com/macros/s/AKfycbydcJI13RQQj7RgGPGrEChPOv_1u06b-2tjqbz1TJGQjRj4ltW-rOQb1NW93LQrN14sng/exec";
 var VC={Horatio:"#7c3aed",ECE:"#0284c7",Telus:"#059669"};
 var TC={"<30 Days":"#f59e0b","30\u201390 Days":"#6366f1","\u226590 Days":"#10b981",Unknown:"#94a3b8"};
-var RC={Agent:"#3b82f6","Senior Agent":"#8b5cf6","Team Lead":"#ec4899",QA:"#f59e0b",Trainer:"#10b981"};
-var RO=["Agent","Senior Agent","Team Lead","QA","Trainer"];
+var RC={Agent:"#3b82f6","Senior Agent":"#8b5cf6","Team Lead":"#ec4899","Senior Team Lead":"#f472b6",QA:"#f59e0b",Trainer:"#10b981"};
+var RO=["Agent","Senior Agent","Team Lead","Senior Team Lead","QA","Trainer"];
 var SPC=["#6366f1","#0ea5e9","#8b5cf6","#ec4899","#f59e0b","#10b981","#ef4444","#14b8a6","#f97316","#a855f7"];
 var ETC={Training:"#f59e0b",Production:"#3b82f6",Leadership:"#8b5cf6"};
 var ATC={Voluntary:"#f59e0b",Involuntary:"#ef4444",Regrettable:"#ef4444","Non-Regrettable":"#10b981"};
@@ -26,7 +26,7 @@ var S={all:[],stats:[],attrData:[],ytdAttr:[],attrMonths:[],attrYears:[],tab:"ov
 function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
 function n(h){return(h||"").trim().toLowerCase().replace(/[^a-z0-9]/g,"_")}
 function gf(row,keys){for(var i=0;i<keys.length;i++){var k=keys[i].toLowerCase().replace(/:/g,"").trim();for(var rk in row){if(rk.toLowerCase().replace(/:/g,"").trim()===k)return(row[rk]!=null?row[rk]:"").toString().trim()}}return""}
-function nr(r){r=(r||"").trim().toLowerCase();if(r==="agent")return"Agent";if(r==="senior agent")return"Senior Agent";if(r==="team lead"||r==="senior team lead")return"Team Lead";if(r==="qa")return"QA";if(r==="trainer")return"Trainer";return"_x"}
+function nr(r){r=(r||"").trim().toLowerCase();if(r==="agent")return"Agent";if(r==="senior agent")return"Senior Agent";if(r==="team lead")return"Team Lead";if(r==="senior team lead")return"Senior Team Lead";if(r==="qa")return"QA";if(r==="trainer")return"Trainer";return"_x"}
 function tb(d){if(d==null)return"Unknown";if(d<30)return"<30 Days";if(d<90)return"30\u201390 Days";return"\u226590 Days"}
 
 function procRoster(rows,vendor){
