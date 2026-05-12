@@ -21,7 +21,7 @@ var SPC=["#6366f1","#0ea5e9","#8b5cf6","#ec4899","#f59e0b","#10b981","#ef4444","
 var ETC={Training:"#f59e0b",Production:"#3b82f6",Leadership:"#8b5cf6"};
 var ATC={Voluntary:"#f59e0b",Involuntary:"#ef4444",Regrettable:"#ef4444","Non-Regrettable":"#10b981"};
 
-var S={all:[],stats:[],attrData:[],ytdAttr:[],attrMonths:[],attrYears:[],tab:"overview",dv:"all",q:"",sc:null,sd:"asc",ay:"all",dbg:"",loading:true,err:null,ts:null};
+var S={all:[],stats:[],attrData:[],ytdAttr:[],attrMonths:[],attrYears:[],tab:"overview",dv:"all",q:"",sc:null,sd:"asc",ay:"all",rf:{"Agent":true},dbg:"",loading:true,err:null,ts:null};
 
 function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
 function n(h){return(h||"").trim().toLowerCase().replace(/[^a-z0-9]/g,"_")}
@@ -59,8 +59,12 @@ function procAttr(rows){
   return out
 }
 
+function toggleRole(r){if(S.rf[r])delete S.rf[r];else S.rf[r]=true;render()}
+
 function getDD(){
   var list=S.dv==="all"?S.all:S.all.filter(function(a){return a.vendor===S.dv});
+  var activeRoles=Object.keys(S.rf);
+  if(activeRoles.length>0){list=list.filter(function(a){return S.rf[a.role]})}
   if(S.q){var q=S.q.toLowerCase();list=list.filter(function(a){return a.name.toLowerCase().indexOf(q)>=0||a.email.toLowerCase().indexOf(q)>=0||a.role.toLowerCase().indexOf(q)>=0||a.vendor.toLowerCase().indexOf(q)>=0||a.manager.toLowerCase().indexOf(q)>=0||a.supervisor.toLowerCase().indexOf(q)>=0||a.site.toLowerCase().indexOf(q)>=0})}
   if(S.sc){var sc=S.sc,sd=S.sd;list=list.slice().sort(function(a,b){var va=a[sc],vb=b[sc];if(sc==="tenureDays"){va=va!=null?va:-1;vb=vb!=null?vb:-1;return sd==="asc"?va-vb:vb-va}va=(va||"").toString().toLowerCase();vb=(vb||"").toString().toLowerCase();return sd==="asc"?va.localeCompare(vb):vb.localeCompare(va)})}
   return list
@@ -295,6 +299,10 @@ function render(){
     h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">';
     ["all","Horatio","ECE","Telus"].forEach(function(v){var ct=v==="all"?all.length:all.filter(function(a){return a.vendor===v}).length;var cl=v==="all"?"#0f172a":VC[v];var on=S.dv===v;h+='<button class="fb'+(on?' on':'')+'" style="border-color:'+cl+';'+(on?'background:'+cl+';color:#fff':'color:'+cl)+'" onclick="S.dv=\''+v+'\';render()">'+(v==="all"?'Select All ('+ct+')':v+' ('+ct+')')+'</button>'});
     h+='</div><input class="srch" type="text" placeholder="Search by name, email, role, vendor, manager, supervisor, or site..." value="'+esc(S.q)+'" oninput="S.q=this.value;render()">';
+    // Role filter
+    h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;align-items:center"><span style="font-size:12px;font-weight:600;color:#64748b;margin-right:4px">Roles:</span>';
+    RO.forEach(function(r){var on=S.rf[r]===true;var clr=RC[r]||"#64748b";var baseList=S.dv==="all"?S.all:S.all.filter(function(a){return a.vendor===S.dv});var cnt=baseList.filter(function(a){return a.role===r}).length;h+='<button style="padding:4px 12px;border-radius:16px;border:1.5px solid '+clr+';font-weight:600;font-size:12px;cursor:pointer;transition:all .15s;background:'+(on?clr:'white')+';color:'+(on?'white':clr)+';opacity:'+(on?1:0.6)+';font-family:inherit" onclick="toggleRole(\''+r+'\')">'+r+' ('+cnt+')</button>'});
+    h+='</div>';
     h+='<div style="font-size:12px;color:#64748b;margin-bottom:10px">Showing <strong>'+dd.length+'</strong> of '+all.length+'</div>';
     h+='<div style="overflow-x:auto;border-radius:8px;border:1px solid #e5e7eb"><table><thead><tr>';
     var cols=[["name","Name"],["vendor","Vendor"],["role","Role"],["email","Flex Email"],["supervisor","Team Lead"],["manager","Manager"],["site","Site"],["startDate","Start Date"],["tenureDays","Tenure"]];
